@@ -1,11 +1,10 @@
 import express from 'express';
+import { userRoutes } from './routes/userRoutes.js';
 
 const app = express();
 
 app.use(express.json());
 
-app.get('/', async (req, res) => {
-  res.status(200).json({ ok: true });
-});
+app.use('/user', userRoutes);
 
 export default app;
