@@ -23,6 +23,14 @@ class User extends Model {
 
     return this;
   }
+
+  static associate(models) {
+    this.hasMany(models.Account, { foreignKey: 'user_id', as: 'accounts' });
+    this.hasMany(models.Transaction, {
+      foreignKey: 'user_id',
+      as: 'transactions',
+    });
+  }
 }
 
 export default User;

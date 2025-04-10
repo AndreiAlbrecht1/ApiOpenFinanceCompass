@@ -113,7 +113,6 @@ export default class UserService {
       throw new Error(error.message);
     }
   }
-
   static async deleteUser(id) {
     try {
       const user = await User.findByPk(id);
