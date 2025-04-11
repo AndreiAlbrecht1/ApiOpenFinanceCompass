@@ -66,4 +66,85 @@ export default class UserController {
       return res.status(500).json({ error: error.message });
     }
   }
+  static async createAccount(req, res) {
+    const { institutionName } = req.body;
+    const userId = req.params.id;
+
+    try {
+      const message = await UserService.createAccount(
+        { institutionName },
+        userId,
+      );
+      return res.status(200).json(message);
+    } catch (error) {
+      if (
+        error.message == 'Instituição não existe.' ||
+        error.message == 'Usuário já tem conta na instituição.' ||
+        error.message == 'Falha na validação.'
+      ) {
+        return res.status(400).json({ error: error.message });
+      }
+      return res.status(500).json({ error: error.message });
+    }
+  }
+  static async getAccounts(req, res) {
+    const institution = req.query.institution;
+    const userId = req.params.id;
+
+    try {
+      const message = await UserService.getAccounts(institution, userId);
+      return res.status(200).json(message);
+    } catch (error) {
+      if (
+        error.message == 'Usuário não tem nenhuma conta.' ||
+        error.message == 'Usuário não tem conta nessa instituição.' ||
+        error.message == 'Instituição não existe.'
+      ) {
+        return res.status(400).json({ error: error.message });
+      }
+      return res.status(500).json({ error: error.message });
+    }
+  }
+  static async deleteAccount(req, res) {
+    const accountId = req.params.accountId;
+    const userId = req.params.id;
+
+    try {
+      const message = await UserService.deleteAccount(accountId, userId);
+      return res.status(200).json(message);
+    } catch (error) {
+      if (
+        error.message == 'Conta não encontrada.' ||
+        error.message == 'Conta só pode ser deletada com saldo igual a 0.' ||
+        error.message ==
+          'Não é possível excluir uma conta que já possui transações.'
+      ) {
+        return res.status(400).json({ error: error.message });
+      }
+      return res.status(500).json({ error: error.message });
+    }
+  }
+  static async createTransaction(req, res) {
+    const { institutionName, typeTransaction, amount, description } = req.body;
+    const userId = req.params.id;
+
+    try {
+      const message = await UserService.createTransaction(
+        { institutionName, typeTransaction, amount, description },
+        userId,
+      );
+      return res.status(200).json(message);
+    } catch (error) {
+      if (
+        error.message == 'Falha na validação.' ||
+        error.message == 'Essa conta não existe.' ||
+        error.message == 'Saldo insuficiente.' ||
+        error.message == 'Tipo de transação inválida.' ||
+        error.message == 'Instituição não existe.'
+      ) {
+        return res.status(400).json({ error: error.message });
+      }
+      return res.status(500).json({ error: error.message });
+    }
+  }
 }

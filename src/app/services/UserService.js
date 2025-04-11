@@ -1,6 +1,10 @@
 import * as Yup from 'yup';
-import User from '../models/User.js';
 import bcrypt from 'bcryptjs';
+import User from '../models/User.js';
+import Account from '../models/Account.js';
+import Institution from '../models/Institution.js';
+import Transaction from '../models/Transaction.js';
+import TypeTransaction from '../models/TypeTransaction.js';
 
 export default class UserService {
   static async getUsers() {
@@ -124,6 +128,206 @@ export default class UserService {
       await User.destroy({ where: { id: id } });
 
       return { message: 'Usuário deletado com sucesso' };
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  }
+  static async createAccount(data, id) {
+    try {
+      const schema = Yup.object().shape({
+        institutionName: Yup.string().required(),
+      });
+
+      if (!(await schema.isValid(data))) {
+        throw new Error('Falha na validação.');
+      }
+
+      const institution = await Institution.findOne({
+        where: { name: data.institutionName },
+      });
+
+      if (!institution) {
+        throw new Error('Instituição não existe.');
+      }
+
+      const accountExists = await Account.findOne({
+        where: {
+          institution_id: institution.id,
+          user_id: id,
+        },
+      });
+
+      if (accountExists) {
+        throw new Error('Usuário já tem conta na instituição.');
+      }
+
+      const newAccount = {
+        user_id: id,
+        institution_id: institution.id,
+        balance: 0,
+      };
+
+      await Account.create(newAccount);
+
+      return { message: 'Conta criada com sucesso' };
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  }
+  static async getAccounts(data, id) {
+    try {
+      let accounts;
+      const user = await User.findByPk(id);
+
+      if (!data) {
+        accounts = await Account.findAll({
+          where: { user_id: id },
+          include: [
+            {
+              model: Institution,
+              as: 'institution',
+              attributes: ['name'],
+            },
+          ],
+        });
+        console.log(Boolean(accounts.length === 0));
+
+        if (accounts.length === 0) {
+          throw new Error('Usuário não tem nenhuma conta.');
+        }
+      } else {
+        const institution = await Institution.findOne({
+          where: { name: data },
+        });
+
+        if (!institution) {
+          throw new Error('Instituição não existe.');
+        }
+
+        accounts = await Account.findOne({
+          where: { user_id: id, institution_id: institution.id },
+          include: [
+            {
+              model: Institution,
+              as: 'institution',
+              attributes: ['name'],
+            },
+          ],
+        });
+
+        if (!accounts) {
+          throw new Error('Usuário não tem conta nessa instituição.');
+        }
+
+        accounts = [accounts];
+      }
+
+      const result = accounts.map((account) => ({
+        id: account.id,
+        user: user.name,
+        institution: account.institution.name,
+        balance: account.balance,
+      }));
+
+      return result;
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  }
+  static async deleteAccount(accountId, userId) {
+    try {
+      const account = await Account.findOne({
+        where: {
+          id: accountId,
+          user_id: userId,
+        },
+      });
+
+      if (!account) {
+        throw new Error('Conta não encontrada.');
+      }
+
+      if (Number(account.balance) !== 0) {
+        throw new Error('Conta só pode ser deletada com saldo igual a 0.');
+      }
+
+      const accountTransactions = await Transaction.findAll({
+        where: { account_id: accountId },
+      });
+
+      if (accountTransactions) {
+        throw new Error(
+          'Não é possível excluir uma conta que já possui transações.',
+        );
+      }
+
+      await account.destroy();
+
+      return { message: 'Conta deletada com sucesso.' };
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  }
+  static async createTransaction(data, userId) {
+    try {
+      const schema = Yup.object().shape({
+        institutionName: Yup.string().required(),
+        typeTransaction: Yup.string().required(),
+        amount: Yup.number().positive().required(),
+        description: Yup.string().required(),
+      });
+
+      if (!(await schema.isValid(data))) {
+        throw new Error('Falha na validação.');
+      }
+
+      const institution = await Institution.findOne({
+        where: { name: data.institutionName },
+      });
+
+      if (!institution) {
+        throw new Error('Instituição não existe.');
+      }
+
+      const account = await Account.findOne({
+        where: { user_id: userId, institution_id: institution.id },
+      });
+
+      if (!account) {
+        throw new Error('Essa conta não existe.');
+      }
+
+      const typeTransaction = await TypeTransaction.findOne({
+        where: { name: data.typeTransaction },
+      });
+      console.log(typeTransaction);
+
+      if (!typeTransaction) {
+        throw new Error('Tipo de transação inválida.');
+      }
+
+      if (typeTransaction.name == 'crédito') {
+        account.balance = Number(account.balance) + Number(data.amount);
+      } else {
+        if (account.balance < data.amount) {
+          throw new Error('Saldo insuficiente.');
+        }
+        account.balance = Number(account.balance) - Number(data.amount);
+      }
+
+      await account.save();
+
+      const newTransaction = {
+        account_id: account.id,
+        user_id: userId,
+        type_id: typeTransaction.id,
+        amount: data.amount,
+        description: data.description,
+      };
+
+      await Transaction.create(newTransaction);
+
+      return { message: 'Transação feita com sucesso.' };
     } catch (error) {
       throw new Error(error.message);
     }
