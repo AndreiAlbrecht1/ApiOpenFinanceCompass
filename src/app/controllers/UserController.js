@@ -140,6 +140,44 @@ export default class UserController {
         error.message == 'Essa conta não existe.' ||
         error.message == 'Saldo insuficiente.' ||
         error.message == 'Tipo de transação inválida.' ||
+        error.message == 'Instituição não existe.' ||
+        error.message == 'O valor deve ter no máximo 2 casas decimais.'
+      ) {
+        return res.status(400).json({ error: error.message });
+      }
+      return res.status(500).json({ error: error.message });
+    }
+  }
+  static async getBalance(req, res) {
+    const institution = req.query.institution;
+    const userId = req.params.id;
+
+    try {
+      const message = await UserService.getBalance(institution, userId);
+      return res.status(200).json(message);
+    } catch (error) {
+      if (
+        error.message == 'Usuário não tem nenhuma conta.' ||
+        error.message == 'Usuário não tem conta nessa instituição.' ||
+        error.message == 'Instituição não existe.'
+      ) {
+        return res.status(400).json({ error: error.message });
+      }
+      return res.status(500).json({ error: error.message });
+    }
+  }
+  static async getStatement(req, res) {
+    const institution = req.query.institution;
+    const userId = req.params.id;
+
+    try {
+      const message = await UserService.getStatement(institution, userId);
+      return res.status(200).json(message);
+    } catch (error) {
+      if (
+        error.message == 'Usuário não tem nenhuma transação.' ||
+        error.message ==
+          'Usuário não tem nenhuma transação nessa instituição.' ||
         error.message == 'Instituição não existe.'
       ) {
         return res.status(400).json({ error: error.message });

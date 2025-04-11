@@ -16,4 +16,8 @@ router.delete('/:id/accounts/:accountId', UserController.deleteAccount);
 
 router.post('/:id/transactions', UserController.createTransaction);
 
+router.get('/:id/balance', UserController.getBalance);
+
+router.get('/:id/statement', UserController.getStatement);
+
 export { router as userRoutes };

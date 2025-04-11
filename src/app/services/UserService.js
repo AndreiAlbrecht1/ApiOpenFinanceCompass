@@ -190,7 +190,6 @@ export default class UserService {
             },
           ],
         });
-        console.log(Boolean(accounts.length === 0));
 
         if (accounts.length === 0) {
           throw new Error('Usuário não tem nenhuma conta.');
@@ -281,6 +280,13 @@ export default class UserService {
         throw new Error('Falha na validação.');
       }
 
+      const numberIsDecimal = data.amount.toString().split('.')[1];
+      if (numberIsDecimal && numberIsDecimal.length > 2) {
+        throw new Error('O valor deve ter no máximo 2 casas decimais.');
+      }
+
+      const amount = Number(data.amount.toFixed(2));
+
       const institution = await Institution.findOne({
         where: { name: data.institutionName },
       });
@@ -300,19 +306,18 @@ export default class UserService {
       const typeTransaction = await TypeTransaction.findOne({
         where: { name: data.typeTransaction },
       });
-      console.log(typeTransaction);
 
       if (!typeTransaction) {
         throw new Error('Tipo de transação inválida.');
       }
 
       if (typeTransaction.name == 'crédito') {
-        account.balance = Number(account.balance) + Number(data.amount);
+        account.balance = Number((Number(account.balance) + amount).toFixed(2));
       } else {
-        if (account.balance < data.amount) {
+        if (account.balance < amount) {
           throw new Error('Saldo insuficiente.');
         }
-        account.balance = Number(account.balance) - Number(data.amount);
+        account.balance = Number((Number(account.balance) - amount).toFixed(2));
       }
 
       await account.save();
@@ -321,13 +326,171 @@ export default class UserService {
         account_id: account.id,
         user_id: userId,
         type_id: typeTransaction.id,
-        amount: data.amount,
+        amount: amount,
         description: data.description,
       };
 
       await Transaction.create(newTransaction);
 
       return { message: 'Transação feita com sucesso.' };
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  }
+  static async getBalance(data, id) {
+    try {
+      let accounts;
+      let totalBalance = 0;
+      const user = await User.findByPk(id);
+
+      if (!data) {
+        accounts = await Account.findAll({
+          where: { user_id: id },
+          include: [
+            {
+              model: Institution,
+              as: 'institution',
+              attributes: ['name'],
+            },
+          ],
+        });
+
+        if (accounts.length === 0) {
+          throw new Error('Usuário não tem nenhuma conta.');
+        }
+      } else {
+        const institution = await Institution.findOne({
+          where: { name: data },
+        });
+
+        if (!institution) {
+          throw new Error('Instituição não existe.');
+        }
+
+        accounts = await Account.findOne({
+          where: { user_id: id, institution_id: institution.id },
+          include: [
+            {
+              model: Institution,
+              as: 'institution',
+              attributes: ['name'],
+            },
+          ],
+        });
+
+        if (!accounts) {
+          throw new Error('Usuário não tem conta nessa instituição.');
+        }
+
+        accounts = [accounts];
+      }
+
+      const result = accounts.map((account) => {
+        totalBalance += Number(account.balance);
+
+        return {
+          id: account.id,
+          user: user.name,
+          institution: account.institution.name,
+          balance: account.balance,
+        };
+      });
+
+      return {
+        accounts: result,
+        totalBalance: Number(totalBalance.toFixed(2)),
+      };
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  }
+  static async getStatement(data, id) {
+    try {
+      let transactions;
+      const user = await User.findByPk(id);
+
+      if (!user) {
+        throw new Error('Usuário não encontrado.');
+      }
+
+      if (!data) {
+        transactions = await Transaction.findAll({
+          where: { user_id: id },
+          include: [
+            {
+              model: Account,
+              as: 'account',
+              include: [
+                {
+                  model: Institution,
+                  as: 'institution',
+                  attributes: ['name'],
+                },
+              ],
+            },
+            {
+              model: TypeTransaction,
+              as: 'type',
+              attributes: ['name'],
+            },
+          ],
+        });
+
+        if (transactions.length === 0) {
+          throw new Error('Usuário não tem nenhuma transação.');
+        }
+      } else {
+        const institution = await Institution.findOne({
+          where: { name: data },
+        });
+
+        if (!institution) {
+          throw new Error('Instituição não existe.');
+        }
+
+        transactions = await Transaction.findAll({
+          where: { user_id: id },
+          include: [
+            {
+              model: Account,
+              as: 'account',
+              where: { institution_id: institution.id },
+              include: [
+                {
+                  model: Institution,
+                  as: 'institution',
+                  attributes: ['name'],
+                },
+              ],
+            },
+            {
+              model: TypeTransaction,
+              as: 'type',
+              attributes: ['name'],
+            },
+          ],
+        });
+
+        if (transactions.length === 0) {
+          throw new Error(
+            'Usuário não tem nenhuma transação nessa instituição.',
+          );
+        }
+      }
+
+      const result = transactions.map((transaction) => {
+        return {
+          id: transaction.id,
+          user: user.name,
+          institution: transaction.account.institution.name,
+          amount: transaction.amount,
+          type: transaction.type.name,
+          description: transaction.description,
+          createdAt: transaction.createdAt,
+        };
+      });
+
+      return result;
     } catch (error) {
       throw new Error(error.message);
     }
