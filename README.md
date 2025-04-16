@@ -11,6 +11,7 @@ API RESTful para gerenciamento de usuários, contas bancárias, instituições f
 - Realização de transações (crédito e débito)
 - Consulta de saldo e extrato por instituição
 - Gerenciamento completo de instituições financeiras
+- Autenticação de usuários com JWT
 
 ---
 
@@ -31,6 +32,7 @@ Este projeto utiliza as seguintes dependências para garantir a funcionalidade e
 - **[bcryptjs](https://www.npmjs.com/package/bcryptjs)** – Biblioteca para hash de senhas.
 - **[dotenv](https://www.npmjs.com/package/dotenv)** – Carrega variáveis de ambiente a partir de um arquivo `.env`.
 - **[express](https://expressjs.com/)** – Framework para construção de APIs em Node.js.
+- **[jsonwebtoken](https://jwt.io/)** – JWT (JSON Web Token) para autenticação segura de usuários.
 - **[pg](https://www.npmjs.com/package/pg)** – Driver PostgreSQL para Node.js.
 - **[pg-hstore](https://www.npmjs.com/package/pg-hstore)** – Biblioteca para serializar e desserializar objetos JSON em PostgreSQL.
 - **[sequelize](https://sequelize.org/)** – ORM (Object-Relational Mapper) para interagir com bancos de dados SQL, como PostgreSQL.
@@ -45,7 +47,30 @@ Este projeto utiliza as seguintes dependências para garantir a funcionalidade e
 - **[prettier](https://prettier.io/)** – Ferramenta de formatação de código que mantém um estilo consistente no código-fonte.
 - **[sequelize-cli](https://sequelize.org/docs/v6/other-topics/cli/)** – Interface de linha de comando para facilitar a criação e execução de migrations e seeders no Sequelize.
 
- ---
+---
+
+## 🔐 Autenticação
+
+Esta API utiliza **JWT (JSON Web Tokens)** para autenticação de usuários. A maioria das rotas é protegida e requer um token válido no header da requisição.
+
+Após o login com email e senha válidos, um token JWT é gerado e deve ser enviado no cabeçalho `Authorization` em todas as requisições protegidas.
+
+### ✅ Rotas públicas (não requerem token):
+
+- `POST /users` – Criação de novo usuário.
+- `POST /auth/login` – Autenticação de usuário e geração de token JWT.
+
+### 🔒 Middleware de verificação de token
+
+Para acessar rotas protegidas, inclua o token JWT retornado no login no cabeçalho da requisição:
+
+```http
+Authorization: Bearer seu_token_jwt
+```
+
+Se o token for inválido, ausente ou mal formatado, a requisição será rejeitada com erro 401.
+
+---
 
 ## ⚙️ Como rodar o projeto localmente
 
@@ -68,12 +93,16 @@ Crie um arquivo `.env` na raiz do projeto com as seguintes variáveis:
 
 ```env
 SERVER_PORT = 3000
+
 DB_HOST=localhost
 DB_PORT=5432
 DB_USER=seu_usuario
 DB_PASS=sua_senha
 DB_NAME=seu_banco
+
+SECRET_KEY="sua_key"
 ```
+> Sugestão para criar a SECRET_KEY: [jwtsecret](https://jwtsecret.com/generate)
 
 > Ajuste os valores conforme sua configuração local, se necessário.
 
@@ -111,6 +140,9 @@ A aplicação estará disponível em `http://localhost:3000`
 
 ## 📌 Endpoints
 
+### Autenticação
+- `POST /auth/login` - Realizar Login
+
 ### Usuários
 - `GET /users` - Listar todos
 - `GET /users/:id` - Buscar por ID
@@ -143,13 +175,14 @@ A aplicação estará disponível em `http://localhost:3000`
 src
 ├── app
 │   ├── controllers
+│   ├── middlewares
 │   ├── models
 │   └── services
 ├── config
 │   └── database.cjs
 ├── database
 │   ├── migrations
-│   └── seeders
+│   └── seeds
 ├── routes
 ├── app.js
 └── server.js
@@ -167,6 +200,30 @@ npm run db:test         # Popula o banco com seeds para testar o banco com exemp
 ```
 ---
 
+## 📌 Endpoint de Login
+
+```http
+POST /auth/login
+Content-Type: application/json
+
+{
+  "email": "andrei@email.com",
+  "password": "12345678"
+}
+```
+
+**Resposta esperada:**
+```json
+{
+  "user": {
+    "id": 1,
+    "name": "Andrei Albrecht",
+    "email": "andrei@email.com"
+  },
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+```
+
 ## 🧾 Endpoints dos Usuários
 
 ### 1. Listar todos os usuários
@@ -178,8 +235,27 @@ GET /users
 [
   {
     "id": 1,
-    "name": "Andrei Albrecht",
-    "email": "andrei@email.com"
+    "name": "Andrei",
+    "email": "andrei@email.com",
+    "hashed_password": "$2b$09$GZWO5bFPY6Oxb49Nb1TOR.x6ckg3uCy6h1/HvCU90Beh3DBdB0JfS",
+    "rounds": 9,
+    "created_at": "2025-04-14T21:44:03.676Z"
+  },
+  {
+    "id": 2,
+    "name": "Lucas",
+    "email": "lucas@email.com",
+    "hashed_password": "$2b$09$GZWO5bFPY6Oxb49Nb1TOR.x6ckg3uCy6h1/HvCU90Beh3DBdB0JfS",
+    "rounds": 9,
+    "created_at": "2025-04-14T21:44:03.676Z"
+  },
+  {
+    "id": 3,
+    "name": "Maria",
+    "email": "maria@email.com",
+    "hashed_password": "$2b$09$GZWO5bFPY6Oxb49Nb1TOR.x6ckg3uCy6h1/HvCU90Beh3DBdB0JfS",
+    "rounds": 9,
+    "created_at": "2025-04-14T21:44:03.676Z"
   }
 ]
 ```
@@ -192,8 +268,11 @@ GET /users/1
 ```json
 {
   "id": 1,
-  "name": "Andrei Albrecht",
-  "email": "andrei@email.com"
+  "name": "Andrei",
+  "email": "andrei@email.com",
+  "hashed_password": "$2b$09$GZWO5bFPY6Oxb49Nb1TOR.x6ckg3uCy6h1/HvCU90Beh3DBdB0JfS",
+  "rounds": 9,
+  "created_at": "2025-04-14T21:44:03.676Z"
 }
 ```
 
@@ -237,6 +316,12 @@ Content-Type: application/json
   "newPassword": "novaSenha123"
 }
 ```
+**Resposta esperada:**
+```json
+{
+  "message": "Usuário atualizado com Sucesso"
+}
+```
 
 ### 5. Deletar usuário
 ```http
@@ -270,6 +355,29 @@ Content-Type: application/json
 ```http
 GET /users/1/accounts
 ```
+**Resposta esperada:**
+```json
+[
+  {
+    "id": 1,
+    "user": "Andrei",
+    "institution": "Banco do Brasil",
+    "balance": "400"
+  },
+  {
+    "id": 2,
+    "user": "Andrei",
+    "institution": "Caixa Econômica",
+    "balance": "150"
+  },
+  {
+    "id": 3,
+    "user": "Andrei",
+    "institution": "Bradesco",
+    "balance": "300"
+  }
+]
+```
 
 #### Filtrar por instituição:
 ```http
@@ -279,10 +387,10 @@ GET /users/1/accounts?institution=Banco%20do%20Brasil
 ```json
 [
   {
-    "id": 3,
+    "id": 1,
     "user": "Andrei Atualizado",
     "institution": "Banco do Brasil",
-    "balance": 0
+    "balance": "400"
   }
 ]
 ```
@@ -322,6 +430,32 @@ Content-Type: application/json
 ```http
 GET /users/1/balance
 ```
+**Resposta esperada:**
+```json
+{
+  "accounts": [
+    {
+      "id": 1,
+      "user": "Andrei",
+      "institution": "Banco do Brasil",
+      "balance": "400"
+    },
+    {
+      "id": 2,
+      "user": "Andrei",
+      "institution": "Caixa Econômica",
+      "balance": "150"
+    },
+    {
+      "id": 3,
+      "user": "Andrei",
+      "institution": "Bradesco",
+      "balance": "300"
+    }
+  ],
+  "totalBalance": 850
+}
+```
 
 #### Por instituição:
 ```http
@@ -332,13 +466,13 @@ GET /users/1/balance?institution=Banco%20do%20Brasil
 {
   "accounts": [
     {
-      "id": 3,
-      "user": "Andrei Atualizado",
+      "id": 1,
+      "user": "Andrei",
       "institution": "Banco do Brasil",
-      "balance": 150.5
+      "balance": "400"
     }
   ],
-  "totalBalance": 150.5
+  "totalBalance": 400
 }
 ```
 
@@ -346,6 +480,51 @@ GET /users/1/balance?institution=Banco%20do%20Brasil
 #### Todas as transações:
 ```http
 GET /users/1/statement
+```
+**Resposta esperada:**
+```json
+[
+  {
+    "id": 1,
+    "user": "Andrei",
+    "institution": "Banco do Brasil",
+    "amount": "500",
+    "type": "crédito",
+    "description": "Depósito inicial"
+  },
+  {
+    "id": 2,
+    "user": "Andrei",
+    "institution": "Banco do Brasil",
+    "amount": "100",
+    "type": "débito",
+    "description": "Supermercado"
+  },
+  {
+    "id": 3,
+    "user": "Andrei",
+    "institution": "Caixa Econômica",
+    "amount": "300",
+    "type": "crédito",
+    "description": "Pix recebido"
+  },
+  {
+    "id": 4,
+    "user": "Andrei",
+    "institution": "Caixa Econômica",
+    "amount": "150",
+    "type": "débito",
+    "description": "Gasolina"
+  },
+  {
+    "id": 5,
+    "user": "Andrei",
+    "institution": "Bradesco",
+    "amount": "300",
+    "type": "crédito",
+    "description": "Reembolso viagem"
+  }
+]
 ```
 
 #### Por instituição:
@@ -356,13 +535,20 @@ GET /users/1/statement?institution=Banco%20do%20Brasil
 ```json
 [
   {
-    "id": 12,
-    "user": "Andrei Atualizado",
+    "id": 1,
+    "user": "Andrei",
     "institution": "Banco do Brasil",
-    "amount": 150.5,
+    "amount": "500",
     "type": "crédito",
-    "description": "Salário",
-    "createdAt": "2025-04-14T16:10:00.000Z"
+    "description": "Depósito inicial"
+  },
+  {
+    "id": 2,
+    "user": "Andrei",
+    "institution": "Banco do Brasil",
+    "amount": "100",
+    "type": "débito",
+    "description": "Supermercado"
   }
 ]
 ```
@@ -380,11 +566,28 @@ GET /institutions
 [
   {
     "id": 1,
-    "name": "Banco do Brasil"
+    "name": "Banco do Brasil",
+    "created_at": "2025-04-14T21:44:06.627Z"
   },
   {
     "id": 2,
-    "name": "Caixa Econômica"
+    "name": "Caixa Econômica",
+    "created_at": "2025-04-14T21:44:06.627Z"
+  },
+  {
+    "id": 3,
+    "name": "Bradesco",
+    "created_at": "2025-04-14T21:44:06.627Z"
+  },
+  {
+    "id": 4,
+    "name": "Itaú",
+    "created_at": "2025-04-14T21:44:06.627Z"
+  },
+  {
+    "id": 5,
+    "name": "Nubank",
+    "created_at": "2025-04-14T21:44:06.627Z"
   }
 ]
 ```
@@ -397,7 +600,8 @@ GET /institutions/1
 ```json
 {
   "id": 1,
-  "name": "Banco do Brasil"
+  "name": "Banco do Brasil",
+  "created_at": "2025-04-14T21:44:06.627Z"
 }
 ```
 

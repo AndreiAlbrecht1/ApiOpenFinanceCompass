@@ -254,7 +254,7 @@ export default class UserService {
         where: { account_id: accountId },
       });
 
-      if (accountTransactions) {
+      if (accountTransactions.length !== 0) {
         throw new Error(
           'Não é possível excluir uma conta que já possui transações.',
         );

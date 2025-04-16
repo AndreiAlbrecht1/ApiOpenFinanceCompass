@@ -66,7 +66,11 @@ export default class InstitutionController {
       const message = await InstitutionService.deleteInstitution(req.params.id);
       return res.status(200).json(message);
     } catch (error) {
-      if (error.message == 'Instituição não encontrada.') {
+      if (
+        error.message == 'Instituição não encontrada.' ||
+        error.message ==
+          'Não é possível deletar instituições que possuem contas.'
+      ) {
         return res.status(400).json({ error: error.message });
       }
       return res.status(500).json({ error: error.message });

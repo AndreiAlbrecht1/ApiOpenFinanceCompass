@@ -1,5 +1,6 @@
 import * as Yup from 'yup';
 import Institution from '../models/Institution.js';
+import Account from '../models/Account.js';
 
 export default class InstitutionService {
   static async getInstitutions() {
@@ -90,6 +91,18 @@ export default class InstitutionService {
 
       if (!institution) {
         throw new Error('Instituição não encontrada.');
+      }
+
+      const exitsAccounts = await Account.findAll({
+        where: { institution_id: id },
+      });
+
+      console.log(exitsAccounts);
+
+      if (exitsAccounts.length !== 0) {
+        throw new Error(
+          'Não é possível deletar instituições que possuem contas.',
+        );
       }
 
       await Institution.destroy({ where: { id: id } });
