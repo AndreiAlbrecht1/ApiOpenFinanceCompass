@@ -3,6 +3,31 @@
 API RESTful para gerenciamento de usuários, contas bancárias, instituições financeiras e transações, utilizando Node.js, Express, Sequelize e PostgreSQL.
 
 ---
+## 📑 Sumário
+
+- [📘 API Open Finance Compass](#-api-open-finance-compass)
+- [🚀 Funcionalidades](#-funcionalidades)
+- [🧰 Requisitos](#-requisitos)
+- [📦 Dependências do Projeto](#-dependências-do-projeto)
+  - [🔧 Dependências](#-dependências)
+  - [🛠️ Dependências de Desenvolvimento](#-dependências-de-desenvolvimento)
+- [🧪 Ferramentas de Desenvolvimento](#-ferramentas-de-desenvolvimento)
+  - [📬 Postman](#-postman)
+  - [🛢️ PgAdmin 4](#-pgadmin-4)
+- [🔐 Autenticação](#-autenticação)
+  - [✅ Rotas públicas (não requerem token)](#-rotas-públicas-não-requerem-token)
+  - [🔒 Middleware de verificação de token](#-middleware-de-verificação-de-token)
+- [⚙️ Como rodar o projeto localmente](#-como-rodar-o-projeto-localmente)
+- [📌 Endpoints](#-endpoints)
+- [📁 Estrutura do projeto](#-estrutura-do-projeto)
+- [🧪 Scripts úteis](#-scripts-úteis)
+- [💰 Fluxo Criação de Usuário até Criação de Transação](#-fluxo-criação-de-usuário-até-criação-de-transação)
+- [📌 Endpoint de Login](#-endpoint-de-login)
+- [🧾 Endpoints dos Usuários](#-endpoints-dos-usuários)
+- [📘 Endpoints de Instituições](#-endpoints-de-instituições)
+
+
+---
 
 ## 🚀 Funcionalidades
 
@@ -46,6 +71,20 @@ Este projeto utiliza as seguintes dependências para garantir a funcionalidade e
 - **[nodemon](https://www.npmjs.com/package/nodemon)** – Utilitário que reinicia o servidor automaticamente durante o desenvolvimento.
 - **[prettier](https://prettier.io/)** – Ferramenta de formatação de código que mantém um estilo consistente no código-fonte.
 - **[sequelize-cli](https://sequelize.org/docs/v6/other-topics/cli/)** – Interface de linha de comando para facilitar a criação e execução de migrations e seeders no Sequelize.
+
+---
+
+## 🧪 Ferramentas de Desenvolvimento
+
+Durante o desenvolvimento desta API, foram utilizadas as seguintes ferramentas para testes e gerenciamento do banco de dados:
+
+### 📬 Postman
+
+O [Postman](https://www.postman.com/) foi utilizado para testar as rotas da API, simulando requisições `POST`, `GET`, `PATCH` e `DELETE`. Ele também permitiu o envio de tokens JWT via headers para acesso a rotas protegidas, além de facilitar a validação das respostas da API em diferentes cenários.
+
+### 🛢️ PgAdmin 4
+
+O [PgAdmin 4](https://www.pgadmin.org/) foi usado para inspecionar visualmente as tabelas e registros do banco de dados PostgreSQL.
 
 ---
 
@@ -200,6 +239,105 @@ npm run db:test         # Popula o banco com seeds para testar o banco com exemp
 ```
 ---
 
+## 💰 Fluxo Criação de Usuário até Criação de Transação
+>Para fazer as requisições usar de preferência Postman ou Insomnia
+
+### 1. Criar Conta
+```http
+POST /users
+Content-Type: application/json
+
+{
+  "name": "Teste Teste",
+  "email": "teste@teste.com",
+  "password": "teste123"
+}
+```
+**Resposta esperada:**
+```json
+{
+  "message": "Usuário criado com sucesso"
+}
+```
+### 2. Login
+```http
+POST /auth/login
+Content-Type: application/json
+
+{
+  "email": "andrei@email.com",
+  "password": "12345678"
+}
+```
+
+**Resposta esperada:**
+```json
+{
+  "user": {
+    "id": 1,
+    "name": "Andrei Albrecht",
+    "email": "andrei@email.com"
+  },
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+```
+> Colocar o token no Header nessa formatação
+```http
+Authorization: Bearer seu_token_jwt
+```
+
+### 3. Criar Instituição
+```http
+POST /institutions
+Content-Type: application/json
+
+{
+  "name": "Banco Teste"
+}
+```
+**Resposta esperada:**
+```json
+{
+  "message": "Instituição criada com sucesso"
+}
+```
+### 4. Criar Conta
+```http
+POST /users/1/accounts
+Content-Type: application/json
+
+{
+  "institutionName": "Banco Teste"
+}
+```
+**Resposta esperada:**
+```json
+{
+  "message": "Conta criada com sucesso"
+}
+```
+### 5. Criar Transação
+```http
+POST /users/1/transactions
+Content-Type: application/json
+
+{
+  "institutionName": "Banco Teste",
+  "typeTransaction": "crédito",
+  "amount": 300,
+  "description": "Teste"
+}
+```
+**Resposta esperada:**
+```json
+{
+  "message": "Transação feita com sucesso."
+}
+```
+---
+## Exemplos para todos os Endpoints da API
+
+---
 ## 📌 Endpoint de Login
 
 ```http
@@ -223,6 +361,7 @@ Content-Type: application/json
   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 }
 ```
+---
 
 ## 🧾 Endpoints dos Usuários
 
@@ -555,7 +694,7 @@ GET /users/1/statement?institution=Banco%20do%20Brasil
 
 ---
 
-## 📘 Rotas de Instituições
+## 📘 Endpoints de Instituições
 
 ### 1. Listar Instituições
 ```http
