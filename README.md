@@ -135,15 +135,17 @@ SERVER_PORT = 3000
 
 DB_HOST=localhost
 DB_PORT=5432
-DB_USER=seu_usuario
-DB_PASS=sua_senha
-DB_NAME=seu_banco
+DB_USER=postgres
+DB_PASS=postgres
+DB_NAME=openfinance
 
 SECRET_KEY="sua_key"
 ```
 > Sugestão para criar a SECRET_KEY: [jwtsecret](https://jwtsecret.com/generate)
 
 > Ajuste os valores conforme sua configuração local, se necessário.
+
+> Confira se as variáveis da imagem docker e do `.env` são compatíveis.
 
 ### 4. Suba o banco com Docker
 
