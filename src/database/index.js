@@ -1,5 +1,5 @@
 import Sequelize from 'sequelize';
-import databaseConfig from '../config/database.cjs';
+import databaseConfig from '../config/database.js';
 
 import User from '../app/models/User.js';
 import Institution from '../app/models/Institution.js';

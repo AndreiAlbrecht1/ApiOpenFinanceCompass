@@ -5,9 +5,9 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon src/server.js",
-    "db:reset": "npx sequelize-cli db:drop --config src/config/database.cjs && npx sequelize-cli db:create --config src/config/database.cjs && npx sequelize-cli db:migrate --config src/config/database.cjs && npx sequelize-cli db:seed --seed 20250410141623-seed-type-transactions.cjs --config src/config/database.cjs",
+    "db:reset": "npx sequelize-cli db:drop && npx sequelize-cli db:create && npx sequelize-cli db:migrate && npx sequelize-cli db:seed --seed 20250410141623-seed-type-transactions.cjs",
     "db:test": "npx sequelize-cli db:seed --seed 20250414201134-demo-users.cjs && npx sequelize-cli db:seed --seed 20250414201142-demo-institutions.cjs && npx sequelize-cli db:seed --seed 20250414201146-demo-accounts.cjs && npx sequelize-cli db:seed --seed 20250414201151-demo-transactions.cjs",
-    "db:start": "npx sequelize-cli db:create --config src/config/database.cjs && npx sequelize-cli db:migrate --config src/config/database.cjs && npx sequelize-cli db:seed --seed 20250410141623-seed-type-transactions.cjs --config src/config/database.cjs"
+    "db:start": "npx sequelize-cli db:migrate && npx sequelize-cli db:seed --seed 20250410141623-seed-type-transactions.cjs"
   },
   "keywords": [],
   "author": "",
