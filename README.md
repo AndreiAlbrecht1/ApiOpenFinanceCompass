@@ -155,19 +155,19 @@ docker-compose up -d
 
 Aguarde o banco estar totalmente ativo antes de seguir.
 
-### 6. Rode as migrations e a seed essencial com esse script
+### 5. Rode as migrations e a seed essencial com esse script
 
 ```bash
 npm run db:start
 ```
 
-### 7. Inicie a API em ambiente de desenvolvimento
+### 6. Inicie a API em ambiente de desenvolvimento
 
 ```bash
 npm run dev
 ```
 
-### 8. Se quiser pode rodar seeds para testes com esse script
+### 7. Se quiser pode rodar seeds para testes com esse script
 
 > todos os usuários criados pela seed teste tem a senha 12345678
 
