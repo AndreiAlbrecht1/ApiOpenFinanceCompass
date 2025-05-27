@@ -5,19 +5,16 @@ class User extends Model {
     super.init(
       {
         name: Sequelize.STRING,
+        cpf: Sequelize.STRING,
         email: Sequelize.STRING,
         hashed_password: Sequelize.STRING,
         rounds: Sequelize.INTEGER,
-        created_at: {
-          type: Sequelize.DATE,
-          defaultValue: Sequelize.NOW,
-        },
       },
       {
         sequelize,
         modelName: 'User',
         tableName: 'users',
-        timestamps: false,
+        timestamps: true,
       },
     );
 

@@ -24,10 +24,15 @@ export default class UserController {
     }
   }
   static async createUser(req, res) {
-    const { name, email, password } = req.body;
+    const { name, cpf, email, password } = req.body;
 
     try {
-      const message = await UserService.createUser({ name, email, password });
+      const message = await UserService.createUser({
+        name,
+        cpf,
+        email,
+        password,
+      });
       return res.status(200).json(message);
     } catch (error) {
       if (
@@ -48,7 +53,8 @@ export default class UserController {
         error.message == 'Usuário não encontrado.' ||
         error.message == 'Falha na validação.' ||
         error.message == 'Senha Incorreta' ||
-        error.message == 'Nenhum dado para atualizar foi recebido'
+        error.message == 'Nenhum dado para atualizar foi recebido' ||
+        error.message == 'Esses dados já estão sendo usados.'
       ) {
         return res.status(400).json({ error: error.message });
       }

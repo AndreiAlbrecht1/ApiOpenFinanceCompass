@@ -9,16 +9,12 @@ class Transaction extends Model {
         type_id: Sequelize.INTEGER,
         amount: Sequelize.DECIMAL,
         description: Sequelize.STRING,
-        created_at: {
-          type: Sequelize.DATE,
-          defaultValue: Sequelize.NOW,
-        },
       },
       {
         sequelize,
         modelName: 'Transaction',
         tableName: 'transactions',
-        timestamps: false,
+        timestamps: true,
       },
     );
 

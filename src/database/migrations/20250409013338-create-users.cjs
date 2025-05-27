@@ -9,12 +9,23 @@ module.exports = {
         autoIncrement: true,
         allowNull: false,
       },
+      cpf: {
+        type: Sequelize.STRING,
+        allowNull: false,
+        unique: true,
+      },
       name: Sequelize.STRING,
       email: Sequelize.STRING,
       hashed_password: Sequelize.STRING,
       rounds: Sequelize.INTEGER,
       created_at: {
         type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
+      },
+      updated_at: {
+        type: Sequelize.DATE,
+        allowNull: false,
         defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
       },
     });

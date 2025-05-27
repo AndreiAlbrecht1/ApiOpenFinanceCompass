@@ -1,4 +1,5 @@
 import * as Yup from 'yup';
+import { randomInt } from 'crypto';
 import bcrypt from 'bcryptjs';
 import User from '../models/User.js';
 import Account from '../models/Account.js';
@@ -37,6 +38,7 @@ export default class UserService {
     try {
       const schema = Yup.object().shape({
         name: Yup.string().required(),
+        cpf: Yup.string().required(),
         email: Yup.string().email().required(),
         password: Yup.string().min(8).required(),
       });
@@ -45,11 +47,15 @@ export default class UserService {
         throw new Error('Falha na validação.');
       }
 
-      const userExists = await User.findOne({
+      const userExistsEmail = await User.findOne({
         where: { email: data.email },
       });
 
-      if (userExists) {
+      const userExistsCpf = await User.findOne({
+        where: { cpf: data.cpf },
+      });
+
+      if (userExistsEmail || userExistsCpf) {
         throw new Error('Usuário já existe.');
       }
 
@@ -58,6 +64,7 @@ export default class UserService {
 
       const newUser = {
         name: data.name,
+        cpf: data.cpf,
         email: data.email,
         hashed_password: hashedPassword,
         rounds: saltRounds,
@@ -74,6 +81,7 @@ export default class UserService {
     try {
       const schema = Yup.object().shape({
         name: Yup.string(),
+        cpf: Yup.string(),
         email: Yup.string().email(),
         newPassword: Yup.string().min(8),
         oldPassword: Yup.string()
@@ -95,6 +103,18 @@ export default class UserService {
 
       if (!(await schema.isValid(data))) {
         throw new Error('Falha na validação.');
+      }
+
+      const userExistsEmail = await User.findOne({
+        where: { email: data.email },
+      });
+
+      const userExistsCpf = await User.findOne({
+        where: { cpf: data.cpf },
+      });
+
+      if (userExistsEmail || userExistsCpf) {
+        throw new Error('Esses dados já estão sendo usados.');
       }
 
       if (
@@ -161,9 +181,27 @@ export default class UserService {
         throw new Error('Usuário já tem conta na instituição.');
       }
 
+      let unique = false;
+      let agency, account;
+
+      while (!unique) {
+        agency = String(randomInt(1, 10000)).padStart(4, '0');
+        account = String(randomInt(1, 100000000)).padStart(8, '0');
+
+        const duplicate = await Account.findOne({
+          where: { agency, account },
+        });
+
+        if (!duplicate) {
+          unique = true;
+        }
+      }
+
       const newAccount = {
         user_id: id,
         institution_id: institution.id,
+        account: account,
+        agency: agency,
         balance: 0,
       };
 
@@ -224,6 +262,8 @@ export default class UserService {
       const result = accounts.map((account) => ({
         id: account.id,
         user: user.name,
+        account: account.account,
+        agency: account.agency,
         institution: account.institution.name,
         balance: account.balance,
       }));

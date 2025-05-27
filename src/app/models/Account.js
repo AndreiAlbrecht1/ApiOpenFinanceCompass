@@ -7,16 +7,14 @@ class Account extends Model {
         user_id: Sequelize.INTEGER,
         institution_id: Sequelize.INTEGER,
         balance: Sequelize.DECIMAL,
-        created_at: {
-          type: Sequelize.DATE,
-          defaultValue: Sequelize.NOW,
-        },
+        agency: Sequelize.STRING,
+        account: Sequelize.STRING,
       },
       {
         sequelize,
         modelName: 'Account',
         tableName: 'accounts',
-        timestamps: false,
+        timestamps: true,
       },
     );
 
@@ -32,6 +30,10 @@ class Account extends Model {
     this.hasMany(models.Transaction, {
       foreignKey: 'account_id',
       as: 'transactions',
+    });
+    this.hasMany(models.OpenFinanceAuthorization, {
+      foreignKey: 'account_id',
+      as: 'openFinanceAuthorizations',
     });
   }
 }

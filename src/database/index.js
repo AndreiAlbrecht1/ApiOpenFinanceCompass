@@ -6,8 +6,16 @@ import Institution from '../app/models/Institution.js';
 import Account from '../app/models/Account.js';
 import Transaction from '../app/models/Transaction.js';
 import TypeTransaction from '../app/models/TypeTransaction.js';
+import OpenFinanceAuthorization from '../app/models/OpenFinanceAuthorization.js';
 
-const models = [User, Institution, Account, Transaction, TypeTransaction];
+const models = [
+  User,
+  Institution,
+  Account,
+  Transaction,
+  TypeTransaction,
+  OpenFinanceAuthorization,
+];
 
 class Database {
   constructor() {

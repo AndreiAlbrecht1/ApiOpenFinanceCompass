@@ -18,8 +18,16 @@ module.exports = {
         references: { model: 'institutions', key: 'id' },
       },
       balance: Sequelize.DECIMAL,
+      agency: Sequelize.STRING,
+      account: Sequelize.STRING,
       created_at: {
         type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
+      },
+      updated_at: {
+        type: Sequelize.DATE,
+        allowNull: false,
         defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
       },
     });

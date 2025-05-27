@@ -5,16 +5,12 @@ class Institution extends Model {
     super.init(
       {
         name: Sequelize.STRING,
-        created_at: {
-          type: Sequelize.DATE,
-          defaultValue: Sequelize.NOW,
-        },
       },
       {
         sequelize,
         modelName: 'Institution',
         tableName: 'institutions',
-        timestamps: false,
+        timestamps: true,
       },
     );
 
