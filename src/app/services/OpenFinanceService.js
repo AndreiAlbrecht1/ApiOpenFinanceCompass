@@ -3,6 +3,7 @@ import OpenFinanceAuthorization from '../models/OpenFinanceAuthorization.js';
 import Account from '../models/Account.js';
 import User from '../models/User.js';
 import Institution from '../models/Institution.js';
+import UserService from './UserService.js';
 
 export default class OpenFinanceService {
   static async createAuthorization(data) {
@@ -224,6 +225,66 @@ export default class OpenFinanceService {
       success: true,
       data: {
         balance,
+      },
+    };
+  }
+  static async createTransactionOpenFinance(data) {
+    const schema = Yup.object().shape({
+      account: Yup.string().required(),
+      agency: Yup.string().required(),
+      amount: Yup.number().positive().required(),
+    });
+
+    if (!(await schema.isValid(data))) {
+      throw new Error('Falha na validação.');
+    }
+
+    const { account, agency, amount } = data;
+
+    const accountUser = await Account.findOne({
+      where: { agency, account },
+      include: [{ model: Institution, as: 'institution' }],
+    });
+
+    if (!accountUser) {
+      throw new Error('Conta não encontrada.');
+    }
+
+    const authorization = await OpenFinanceAuthorization.findOne({
+      where: { account_id: accountUser.id },
+    });
+
+    if (!authorization || authorization.status == 'revoked') {
+      throw new Error('Conta não autorizada.');
+    }
+
+    if (
+      authorization.expiration &&
+      new Date() > new Date(authorization.expiration_date)
+    ) {
+      await authorization.update({ status: 'expired' });
+    }
+
+    if (authorization.status == 'expired') {
+      throw new Error('Autorização Expirada.');
+    }
+
+    const transactionData = {
+      institutionName: accountUser.institution.name,
+      typeTransaction: 'débito',
+      amount,
+      description: 'Recarga Saldo Cofrinho Via OpenFinance',
+    };
+
+    await UserService.createTransaction(transactionData, accountUser.user_id);
+
+    const updatedAccount = await Account.findByPk(accountUser.id);
+
+    return {
+      success: true,
+      message: 'Transação feita com sucesso',
+      data: {
+        balance: updatedAccount.balance,
       },
     };
   }

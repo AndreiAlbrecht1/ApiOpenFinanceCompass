@@ -63,4 +63,25 @@ export default class OpenFinanceController {
       return res.status(500).json({ error: error.message });
     }
   }
+  static async createTransactionOpenFinance(req, res) {
+    try {
+      const { account, agency, amount } = req.body;
+      const response = await OpenFinanceService.createTransactionOpenFinance({
+        account,
+        agency,
+        amount,
+      });
+      return res.status(200).json(response);
+    } catch (error) {
+      if (
+        error.message == 'Falha na validação.' ||
+        error.message == 'Conta não autorizada.' ||
+        error.message == 'Autorização Expirada.' ||
+        error.message == 'Conta não encontrada.'
+      ) {
+        return res.status(400).json({ error: error.message });
+      }
+      return res.status(500).json({ error: error.message });
+    }
+  }
 }
