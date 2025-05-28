@@ -60,7 +60,7 @@ export default class OpenFinanceService {
       success: true,
       message: 'Compartilhamento feito com sucesso',
       data: {
-        institution: {
+        account: {
           name: account.institution.name,
           account: account.account,
           agency: account.agency,
@@ -126,7 +126,7 @@ export default class OpenFinanceService {
       success: true,
       message: 'Autorização Atualizada com Sucesso',
       data: {
-        institution: {
+        account: {
           name: account.institution.name,
           account: account.account,
           agency: account.agency,
