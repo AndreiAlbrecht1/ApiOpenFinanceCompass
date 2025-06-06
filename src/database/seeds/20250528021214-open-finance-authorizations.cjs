@@ -42,16 +42,16 @@ module.exports = {
         rounds: 9,
       },
       {
-        name: 'Mazembe Mundial',
-        cpf: '12345678910',
-        email: 'conta10@teste.com',
+        name: 'Renato Gaúcho',
+        cpf: '12345678909',
+        email: 'conta9@teste.com',
         hashed_password: hashedPassword,
         rounds: 9,
       },
       {
-        name: 'Renato Gaúcho',
-        cpf: '12345678909',
-        email: 'conta9@teste.com',
+        name: 'Mazembe Mundial',
+        cpf: '12345678910',
+        email: 'conta10@teste.com',
         hashed_password: hashedPassword,
         rounds: 9,
       },
@@ -94,6 +94,20 @@ module.exports = {
         balance: 4100.0,
         agency: '9247',
         account: '83746201',
+      },
+      {
+        user_id: 6,
+        institution_id: 1,
+        balance: 51000.0,
+        agency: '9462',
+        account: '84956671',
+      },
+      {
+        user_id: 7,
+        institution_id: 1,
+        balance: 7777.0,
+        agency: '8911',
+        account: '69442561',
       },
     ]);
 
