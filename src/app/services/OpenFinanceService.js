@@ -42,7 +42,28 @@ export default class OpenFinanceService {
     });
 
     if (authorizationExists) {
-      throw new Error('Já Existe Autorização.');
+      await OpenFinanceAuthorization.update(
+        {
+          status: authorization ? 'accepted' : 'revoked',
+          expiration_date: expiration ? expirationDate : null,
+          expiration,
+        },
+        {
+          where: { account_id: account.id },
+        },
+      );
+
+      return {
+        success: true,
+        message: 'Compartilhamento feito com Sucesso',
+        data: {
+          account: {
+            name: account.institution.name,
+            account: account.account,
+            agency: account.agency,
+          },
+        },
+      };
     }
 
     if (!authorization) {

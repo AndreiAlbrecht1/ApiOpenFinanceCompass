@@ -8,12 +8,6 @@ export default {
   port: process.env.DB_PORT,
   dialect: 'postgres',
   logging: false,
-  dialectOptions: {
-    ssl: {
-      require: true,
-      rejectUnauthorized: false,
-    },
-  },
   define: {
     timestamps: true,
     underscored: true,
