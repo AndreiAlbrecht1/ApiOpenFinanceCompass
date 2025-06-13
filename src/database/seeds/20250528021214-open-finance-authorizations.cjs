@@ -55,6 +55,42 @@ module.exports = {
         hashed_password: hashedPassword,
         rounds: 9,
       },
+
+      {
+        name: 'Andrei Albrecht',
+        cpf: '12345678911',
+        email: 'andreialbrecht@gmail.com',
+        password_hash: hashedPassword,
+        rounds: 9,
+      },
+      {
+        name: 'Alexandre Tonin',
+        cpf: '12345678912',
+        email: 'xandetonin@gmail.com',
+        password_hash: hashedPassword,
+        rounds: 9,
+      },
+      {
+        name: 'Ruan Oliveira',
+        cpf: '12345678913',
+        email: 'oliveiraruan2018@gmail.com',
+        password_hash: hashedPassword,
+        rounds: 9,
+      },
+      {
+        name: 'Marcos Schlick',
+        cpf: '12345678914',
+        email: 'marcosschlick@gmail.com',
+        password_hash: hashedPassword,
+        rounds: 9,
+      },
+      {
+        name: 'Matheus Aguiar',
+        cpf: '12345678915',
+        email: 'matheus.aguiar068@gmail.com',
+        password_hash: hashedPassword,
+        rounds: 9,
+      },
     ]);
 
     await queryInterface.bulkInsert('institutions', [{ name: 'Nubank' }]);
@@ -108,6 +144,41 @@ module.exports = {
         balance: 7777.0,
         agency: '8911',
         account: '69442561',
+      },
+      {
+        user_id: 8,
+        institution_id: 1,
+        balance: 12546.12,
+        agency: '6948',
+        account: '69332561',
+      },
+      {
+        user_id: 9,
+        institution_id: 1,
+        balance: 125.0,
+        agency: '6977',
+        account: '65988643',
+      },
+      {
+        user_id: 10,
+        institution_id: 1,
+        balance: 66.4,
+        agency: '7983',
+        account: '46794679',
+      },
+      {
+        user_id: 11,
+        institution_id: 1,
+        balance: 694.0,
+        agency: '7776',
+        account: '13466697',
+      },
+      {
+        user_id: 12,
+        institution_id: 1,
+        balance: 497.75,
+        agency: '8911',
+        account: '66669487',
       },
     ]);
 
